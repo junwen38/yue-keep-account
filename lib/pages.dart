@@ -45,13 +45,13 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
     }
   }
 
-  void showSubCategory(BuildContext context, dynamic parent) {
+  void _showSubCategory(BuildContext context, dynamic parent) {
     if (this._parent != null) return;
     Navigator.of(context)
         .pushNamed("CategorySetting", arguments: {"parent": parent});
   }
 
-  void showAdditionForm(BuildContext context, dynamic parent, int type) async {
+  void _showAdditionForm(BuildContext context, dynamic parent, int type) async {
     await Navigator.of(context).pushNamed("CategoryAddition",
         arguments: {"parent": parent, "type": type});
     setState(() {
@@ -59,7 +59,7 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
     });
   }
 
-  void showMenu(BuildContext context, dynamic category) {
+  void _showMenu(BuildContext context, dynamic category) {
     showModalBottomSheet(
         builder: (context) {
           return Container(
@@ -122,10 +122,11 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                               categories: [
                                 ...snapshot.data.where((i) => i["type"] == 0)
                               ],
-                              onPress: (item) => showSubCategory(context, item),
+                              onPress: (item) =>
+                                  _showSubCategory(context, item),
                               onAdditionPress: () =>
-                                  showAdditionForm(context, _parent, 0),
-                              onLongPress: (item) => showMenu(context, item),
+                                  _showAdditionForm(context, _parent, 0),
+                              onLongPress: (item) => _showMenu(context, item),
                             );
                           case "收入":
                             return CategoryGridView(
@@ -133,9 +134,10 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                               categories: [
                                 ...snapshot.data.where((i) => i["type"] == 1)
                               ],
-                              onPress: (item) => showSubCategory(context, item),
+                              onPress: (item) =>
+                                  _showSubCategory(context, item),
                               onAdditionPress: () =>
-                                  showAdditionForm(context, _parent, 1),
+                                  _showAdditionForm(context, _parent, 1),
                             );
                           default:
                             return Center();
