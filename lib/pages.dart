@@ -76,11 +76,27 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                       "删除",
                       style: TextStyle(color: Colors.red),
                     ),
+                    onTap: () => _onDeleteCategory(category),
                   )
                 ],
               ));
         },
         context: context);
+  }
+
+  void _onDeleteCategory(dynamic category) async {
+    Navigator.of(context).pop();
+    var res = await api("/category/${category["id"]}", method: "DELETE");
+    if (res.statusCode == 204) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("删除成功")));
+      setState(() {
+        _ajaxFuture = _refresh();
+      });
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("删除失败")));
+    }
   }
 
   @override
