@@ -1,6 +1,5 @@
-import 'dart:ffi';
-
 import 'package:accountbook_mobile/widgets.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'api.dart';
@@ -33,16 +32,9 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
   }
 
   Future<dynamic> _refresh() async {
-    try {
-      var query = _parent == null ? "" : "?parentId=${_parent['id']}";
-      var res = await api("/category/$query");
-      if (res.statusCode != 200) {
-        throw Exception("HTTP错误");
-      }
-      return res.data;
-    } catch (e) {
-      throw Exception("网络错误");
-    }
+    var query = _parent == null ? "" : "?parentId=${_parent['id']}";
+    var res = await api("/category/$query");
+    return res.data;
   }
 
   void _showSubCategory(BuildContext context, dynamic parent) {
@@ -85,17 +77,16 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
   }
 
   void _onDeleteCategory(dynamic category) async {
-    Navigator.of(context).pop();
-    var res = await api("/category/${category["id"]}", method: "DELETE");
-    if (res.statusCode == 204) {
+    try {
+      Navigator.of(context).pop();
+      await api("/category/${category["id"]}", method: "DELETE");
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("删除成功")));
       setState(() {
         _ajaxFuture = _refresh();
       });
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("删除失败")));
+    } on DioError catch (e) {
+      handleError(context, e);
     }
   }
 
@@ -227,22 +218,22 @@ class _CategoryAdditionPageState extends State<CategoryAdditionPage> {
                     child: Builder(builder: (context) {
                       return TextButton(
                         child: Center(child: Text("添加分类")),
-                        onPressed: () {
-                          api("/category", method: "POST", data: {
-                            "name": getValue("name"),
-                            "type": arguments["type"],
-                            ...(arguments["parent"] != null
-                                ? {"parentId": arguments["parent"]["id"]}
-                                : {})
-                          }).then((value) {
-                            if (value.statusCode == 201) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text("分类添加成功"),
-                              ));
-                              Navigator.pop(context, true);
-                            }
-                          });
+                        onPressed: () async {
+                          try {
+                            await api("/category", method: "POST", data: {
+                              "name": getValue("name"),
+                              "type": arguments["type"],
+                              ...(arguments["parent"] != null
+                                  ? {"parentId": arguments["parent"]["id"]}
+                                  : {})
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("分类添加成功"),
+                            ));
+                            Navigator.pop(context, true);
+                          } on DioError catch (e) {
+                            handleError(context, e);
+                          }
                         },
                       );
                     }),
@@ -298,15 +289,8 @@ class _NotePageState extends State<NotePage> {
   }
 
   Future<dynamic> _refresh() async {
-    try {
-      var res = await api("/category/");
-      if (res.statusCode != 200) {
-        throw Exception("HTTP错误");
-      }
-      return res.data;
-    } catch (ex) {
-      throw Exception("网络错误");
-    }
+    var res = await api("/category/");
+    return res.data;
   }
 
   void _handleCategoryPress(e) {
@@ -317,20 +301,19 @@ class _NotePageState extends State<NotePage> {
 
   void _handleNote(int type) async {
     _updateData();
-    var res = await api("/item/", method: "POST", data: {
-      "date": _date.toIso8601String(),
-      "cash": _cash,
-      "type": type,
-      "category1Id": _selectedCategory1["id"],
-      "comment": _comment
-    });
-    if (res.statusCode == 201) {
+    try {
+      await api("/item/", method: "POST", data: {
+        "date": _date.toIso8601String(),
+        "cash": _cash,
+        "type": type,
+        "category1Id": _selectedCategory1["id"],
+        "comment": _comment
+      });
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("保存成功")));
       Navigator.of(context).pop();
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("保存失败")));
+    } on DioError catch (e) {
+      handleError(context, e);
     }
   }
 
