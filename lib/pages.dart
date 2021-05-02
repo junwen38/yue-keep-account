@@ -255,66 +255,15 @@ class NotePage extends StatefulWidget {
 }
 
 class _NotePageState extends State<NotePage> {
-  Map<String, TextEditingController> _controllers = {
-    "cash": TextEditingController(),
-    "date": TextEditingController(),
-    "comment": TextEditingController()
-  };
-
-  //表单数据
-  double _cash;
-  DateTime _date;
-  dynamic _selectedCategory1;
-  dynamic _selectedCategory2;
-  String _comment;
-
   Future _future;
 
   _NotePageState() {
     _future = _refresh();
   }
 
-  //从表单数据更新Widget
-  void _renderForm() {
-    _controllers["cash"].text = _cash.toString();
-    _controllers["data"].text = DateFormat("yyyy-MM-dd").format(_date);
-    _controllers["comment"].text = _comment;
-  }
-
-  //从Widget更新表单数据
-  void _updateData() {
-    _cash = double.parse(_controllers["cash"].text);
-    _date = DateTime.parse(_controllers["date"].text);
-    _comment = _controllers["comment"].text;
-  }
-
   Future<dynamic> _refresh() async {
     var res = await api("/category/");
     return res.data;
-  }
-
-  void _handleCategoryPress(e) {
-    setState(() {
-      _selectedCategory1 = e;
-    });
-  }
-
-  void _handleNote(int type) async {
-    _updateData();
-    try {
-      await api("/item/", method: "POST", data: {
-        "date": _date.toIso8601String(),
-        "cash": _cash,
-        "type": type,
-        "category1Id": _selectedCategory1["id"],
-        "comment": _comment
-      });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("保存成功")));
-      Navigator.of(context).pop();
-    } on DioError catch (e) {
-      handleError(context, e);
-    }
   }
 
   @override
@@ -333,72 +282,8 @@ class _NotePageState extends State<NotePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var categories = snapshot.data;
-                  if (_selectedCategory1 == null)
-                    _selectedCategory1 =
-                        categories.length > 0 ? categories[0] : null;
-                  const fieldMargin = EdgeInsets.fromLTRB(0, 0, 0, 10);
-                  var payoutForm = Form(
-                    child: ListView(
-                      children: [
-                        Container(
-                          margin: fieldMargin,
-                          child: TextFormField(
-                            controller: _controllers["cash"],
-                            decoration: InputDecoration(labelText: "金额"),
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        Container(
-                          height: 78.5 * 2,
-                          margin: fieldMargin,
-                          child: CategoryGridView(
-                            categories: [
-                              ...categories.where((i) => i["type"] == 0)
-                            ],
-                            type: 0,
-                            selectedItem: _selectedCategory1 != null
-                                ? _selectedCategory1["id"]
-                                : null,
-                            onPress: _handleCategoryPress,
-                          ),
-                        ),
-                        Container(
-                          margin: fieldMargin,
-                          child: TextFormField(
-                            controller: _controllers["date"],
-                            decoration: InputDecoration(labelText: "日期"),
-                            keyboardType: TextInputType.numberWithOptions(),
-                            readOnly: true,
-                            onTap: () async {
-                              var date = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime.parse(
-                                      "1900-01-01T00:00:00.000Z"),
-                                  lastDate: DateTime.parse(
-                                      "2050-12-31T23:59:59.999Z"));
-                              _controllers["date"].text =
-                                  DateFormat("yyyy-MM-dd").format(date);
-                            },
-                          ),
-                        ),
-                        Container(
-                          margin: fieldMargin,
-                          child: TextFormField(
-                            controller: _controllers["comment"],
-                            decoration: InputDecoration(labelText: "注释"),
-                            keyboardType: TextInputType.text,
-                          ),
-                        ),
-                        Container(
-                            margin: fieldMargin,
-                            child: TextButton(
-                                child: Text("记一笔"),
-                                onPressed: () => _handleNote(0)))
-                      ],
-                    ),
-                  );
-                  var incomeForm = Center();
+                  var payoutForm = PayoutForm(categories, 0);
+                  var incomeForm = PayoutForm(categories, 1);
                   return TabBarView(children: [payoutForm, incomeForm]);
                 } else if (snapshot.hasError) {
                   //Error
