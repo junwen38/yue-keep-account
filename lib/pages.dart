@@ -333,8 +333,9 @@ class _NotePageState extends State<NotePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var categories = snapshot.data;
-                  _selectedCategory1 =
-                      categories.length > 0 ? categories[0] : null;
+                  if (_selectedCategory1 == null)
+                    _selectedCategory1 =
+                        categories.length > 0 ? categories[0] : null;
                   const fieldMargin = EdgeInsets.fromLTRB(0, 0, 0, 10);
                   var payoutForm = Form(
                     child: ListView(
