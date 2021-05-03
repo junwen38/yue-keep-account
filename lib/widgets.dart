@@ -236,3 +236,22 @@ class _PayoutFormState extends State<PayoutForm> {
     );
   }
 }
+
+class MainMoneyBox extends StatelessWidget {
+  final String title;
+  final dynamic money;
+
+  MainMoneyBox(this.title, this.money);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(this.money.toString(),
+            textScaleFactor: 2, style: TextStyle(color: Colors.white)),
+        Text(this.title,
+            textScaleFactor: 1, style: TextStyle(color: Colors.white))
+      ],
+    );
+  }
+}
