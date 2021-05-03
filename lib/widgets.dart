@@ -132,7 +132,7 @@ class _PayoutFormState extends State<PayoutForm> {
         displayCategories.length > 0 ? displayCategories[0] : null;
 
     _cash = 0;
-    var now = DateTime.now();
+    var now = DateTime.now().toLocal();
     _date = DateTime(now.year, now.month, now.day);
     _comment = "";
     _renderForm();
