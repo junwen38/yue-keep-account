@@ -11,9 +11,12 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   Future<dynamic> _staticsFuture;
+  Future<dynamic> _lastestFuture;
+  List<dynamic> _lastestItems;
 
   _HomeViewState() {
-    _staticsFuture = _refresh();
+    _staticsFuture = _refreshStatics();
+    _lastestFuture = _refreshLastest(20, 0);
   }
 
   String _getCurrentMonth(String format) {
@@ -21,18 +24,28 @@ class _HomeViewState extends State<HomeView> {
         .format(new DateTime(DateTime.now().year, DateTime.now().month, 1));
   }
 
-  Future<dynamic> _refresh() async {
+  Future<dynamic> _refreshStatics() async {
     var currentMonth = _getCurrentMonth("yyyy-MM-dd");
-    var incomeFuture = api(
+    var resIncome = await api(
         "/statics/monthlyincome/?beginDate=$currentMonth&endDate=$currentMonth");
-    var payoutFuture = api(
+    var resPayout = await api(
         "/statics/monthlypayout/?beginDate=$currentMonth&endDate=$currentMonth");
-    return Future.wait([incomeFuture, payoutFuture]);
+    return [resIncome.data, resPayout.data];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    var staticsbar = Container(
+  Future<dynamic> _refreshLastest(int take, int skip) async {
+    var res = await api("/item/?take=$take&skip=$skip");
+    var data = res.data;
+    if (_lastestItems == null) {
+      _lastestItems = data;
+    } else {
+      _lastestItems.addAll(data);
+    }
+    return _lastestItems;
+  }
+
+  Widget _buildStaticsBar() {
+    return Container(
         decoration: BoxDecoration(color: Colors.blue),
         child: Column(children: [
           Padding(
@@ -41,21 +54,27 @@ class _HomeViewState extends State<HomeView> {
                   future: _staticsFuture,
                   builder: (context, snapshot) {
                     if (snapshot.hasData && !snapshot.hasError) {
-                      var income =
-                          snapshot.data[0].data[_getCurrentMonth("yyyyMM")];
-                      var payout =
-                          snapshot.data[1].data[_getCurrentMonth("yyyyMM")];
+                      var income = snapshot.data[0][_getCurrentMonth("yyyyMM")];
+                      var payout = snapshot.data[1][_getCurrentMonth("yyyyMM")];
                       return Row(
                         children: [
-                          Expanded(child: MainMoneyBox("本月支出", payout, true)),
-                          Expanded(child: MainMoneyBox("本月收入", income, true)),
+                          Expanded(
+                              child: MainMoneyBox(
+                                  title: "本月支出", money: payout, hasData: true)),
+                          Expanded(
+                              child: MainMoneyBox(
+                                  title: "本月收入", money: income, hasData: true)),
                         ],
                       );
                     } else {
                       return Row(
                         children: [
-                          Expanded(child: MainMoneyBox("本月支出", 0, false)),
-                          Expanded(child: MainMoneyBox("本月收入", 0, false)),
+                          Expanded(
+                              child: MainMoneyBox(
+                                  title: "本月支出", money: 0, hasData: false)),
+                          Expanded(
+                              child: MainMoneyBox(
+                                  title: "本月收入", money: 0, hasData: false)),
                         ],
                       );
                     }
@@ -64,7 +83,10 @@ class _HomeViewState extends State<HomeView> {
               padding: EdgeInsets.all(10),
               child: Center(
                   child: TextButton(
-                child: Text("记一笔"),
+                child: Text(
+                  "记一笔",
+                  textScaleFactor: 1.25,
+                ),
                 style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.white),
                     padding: MaterialStateProperty.all(
@@ -74,13 +96,57 @@ class _HomeViewState extends State<HomeView> {
                 onPressed: () async {
                   await Navigator.of(context).pushNamed("Note", arguments: {});
                   setState(() {
-                    _staticsFuture = _refresh();
+                    _staticsFuture = _refreshStatics();
+                    _lastestItems = null;
+                    _lastestFuture = _refreshLastest(20, 0);
                   });
                 },
               )))
         ]));
+  }
+
+  Widget _buildLastestItemBar() {
+    return Expanded(
+        child: FutureBuilder(
+            future: _lastestFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                var data = snapshot.data;
+                return ItemListView(
+                  items: data,
+                  onLoadMore: _handleLoadMore,
+                );
+              } else if (snapshot.hasError) {
+                if (_lastestItems != null) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("数据加载失败")));
+                  return ItemListView(
+                    items: _lastestItems,
+                    onLoadMore: _handleLoadMore,
+                  );
+                } else {
+                  return Center(
+                    child: Text("数据加载失败"),
+                  );
+                }
+              } else {
+                return Container();
+              }
+            }));
+  }
+
+  void _handleLoadMore() {
+    setState(() {
+      _lastestFuture = _refreshLastest(20, _lastestItems.length);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var staticsbar = _buildStaticsBar();
+    var lastestItemBar = _buildLastestItemBar();
     return Column(
-      children: [staticsbar],
+      children: [staticsbar, lastestItemBar],
     );
   }
 }

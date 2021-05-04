@@ -242,7 +242,7 @@ class MainMoneyBox extends StatelessWidget {
   final dynamic money;
   final bool hasData;
 
-  MainMoneyBox(this.title, this.money, this.hasData);
+  MainMoneyBox({this.title, this.money, this.hasData});
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +253,78 @@ class MainMoneyBox extends StatelessWidget {
         Text(this.title,
             textScaleFactor: 1, style: TextStyle(color: Colors.white))
       ],
+    );
+  }
+}
+
+class ItemListView extends StatelessWidget {
+  final dynamic items;
+  final dynamic onLoadMore;
+
+  ItemListView({this.items, this.onLoadMore});
+
+  Widget _getTileTitle(dynamic item) {
+    var title = item["category1"]["name"];
+    if (item["category2"] != null) {
+      title += "-";
+      title += item["category2"]["name"];
+    }
+    return Text(
+      title,
+      textScaleFactor: 1.25,
+    );
+  }
+
+  Widget _getTrailing(dynamic item) {
+    MaterialColor color;
+    if (item["type"] == 0) {
+      color = Colors.red;
+    } else if (item["type"] == 1) {
+      color = Colors.green;
+    } else {
+      color = Colors.black;
+    }
+
+    return Text(item["cash"].toString(),
+        textScaleFactor: 1.5, style: TextStyle(color: color));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    items.sort((r1, r2) {
+      var d1 = DateTime.parse(r1["date"]);
+      var d2 = DateTime.parse(r2["date"]);
+      return d1.compareTo(d2);
+    });
+    DateTime currentDate;
+    var widgets = <Widget>[];
+    for (var r in items.reversed) {
+      if (DateTime.parse(r["date"]) != currentDate) {
+        currentDate = DateTime.parse(r["date"]);
+        widgets.add(Container(
+          padding: EdgeInsets.all(5),
+          child: Text(
+            DateFormat("yyyy年MM月dd日").format(currentDate),
+            style: TextStyle(color: Colors.black54),
+          ),
+        ));
+      }
+      widgets.add(ListTile(
+        title: _getTileTitle(r),
+        subtitle: r["comment"] != "" ? Text(r["comment"]) : null,
+        trailing: _getTrailing(r),
+      ));
+    }
+    widgets.add(ListTile(
+      title: Center(
+          child: Text(
+        "加载更多",
+        style: TextStyle(color: Colors.black54),
+      )),
+      onTap: onLoadMore,
+    ));
+    return ListView(
+      children: widgets,
     );
   }
 }
