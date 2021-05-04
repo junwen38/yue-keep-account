@@ -145,6 +145,7 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                                   _showSubCategory(context, item),
                               onAdditionPress: () =>
                                   _showAdditionForm(context, _parent, 1),
+                              onLongPress: (item) => _showMenu(context, item),
                             );
                           default:
                             return Center();
