@@ -47,15 +47,15 @@ class _HomeViewState extends State<HomeView> {
                           snapshot.data[1].data[_getCurrentMonth("yyyyMM")];
                       return Row(
                         children: [
-                          Expanded(child: MainMoneyBox("本月支出", payout)),
-                          Expanded(child: MainMoneyBox("本月收入", income)),
+                          Expanded(child: MainMoneyBox("本月支出", payout, true)),
+                          Expanded(child: MainMoneyBox("本月收入", income, true)),
                         ],
                       );
                     } else {
                       return Row(
                         children: [
-                          Expanded(child: MainMoneyBox("本月支出", 0)),
-                          Expanded(child: MainMoneyBox("本月收入", 0)),
+                          Expanded(child: MainMoneyBox("本月支出", 0, false)),
+                          Expanded(child: MainMoneyBox("本月收入", 0, false)),
                         ],
                       );
                     }
