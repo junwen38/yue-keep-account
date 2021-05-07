@@ -42,8 +42,8 @@ class CategoryGridView extends StatelessWidget {
         ),
       ),
     );
-    return GridView.count(
-      crossAxisCount: 5,
+    return GridView.extent(
+      maxCrossAxisExtent: 80,
       children: [
         ...categories.map(
           (e) => TextButton(
