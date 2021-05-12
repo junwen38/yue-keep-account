@@ -251,15 +251,31 @@ class NotePage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _NotePageState();
+    return _NotePageState(_args);
   }
 }
 
 class _NotePageState extends State<NotePage> {
   Future _future;
+  Map _args;
+  dynamic _item;
+  bool _showPayout = false;
+  bool _showIncome = false;
 
-  _NotePageState() {
+  _NotePageState(this._args) {
     _future = _refresh();
+
+    _item = _args["item"];
+    if (_item == null) {
+      _showIncome = true;
+      _showPayout = true;
+    } else {
+      if (_item["type"] == 0) {
+        _showPayout = true;
+      } else if (_item["type"] == 1) {
+        _showIncome = true;
+      }
+    }
   }
 
   Future<dynamic> _refresh() async {
@@ -269,13 +285,17 @@ class _NotePageState extends State<NotePage> {
 
   @override
   Widget build(BuildContext context) {
+    var tabs = <Widget>[
+      ...(_showPayout ? [Tab(text: "支出")] : []),
+      ...(_showIncome ? [Tab(text: "收入")] : [])
+    ];
     return DefaultTabController(
-        length: 2,
+        length: tabs.length,
         child: Scaffold(
             appBar: AppBar(
               title: Text("记一笔"),
               bottom: TabBar(
-                tabs: [Tab(text: "支出"), Tab(text: "收入")],
+                tabs: tabs,
               ),
             ),
             body: FutureBuilder(
@@ -283,9 +303,10 @@ class _NotePageState extends State<NotePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var categories = snapshot.data;
-                  var payoutForm = NoteForm(categories, 0);
-                  var incomeForm = NoteForm(categories, 1);
-                  return TabBarView(children: [payoutForm, incomeForm]);
+                  return TabBarView(children: [
+                    ...(_showPayout ? [NoteForm(categories, 0, _item)] : []),
+                    ...(_showIncome ? [NoteForm(categories, 1, _item)] : []),
+                  ]);
                 } else if (snapshot.hasError) {
                   //Error
                   return Center(child: Text("加载失败"));

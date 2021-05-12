@@ -115,6 +115,7 @@ class _HomeViewState extends State<HomeView> {
                 return ItemListView(
                   items: data,
                   onLoadMore: _handleLoadMore,
+                  onItemTap: _handleItemTap,
                 );
               } else if (snapshot.hasError) {
                 if (_lastestItems != null) {
@@ -123,6 +124,7 @@ class _HomeViewState extends State<HomeView> {
                   return ItemListView(
                     items: _lastestItems,
                     onLoadMore: _handleLoadMore,
+                    onItemTap: _handleItemTap,
                   );
                 } else {
                   return Center(
@@ -139,6 +141,10 @@ class _HomeViewState extends State<HomeView> {
     setState(() {
       _lastestFuture = _refreshLastest(20, _lastestItems.length);
     });
+  }
+
+  void _handleItemTap(dynamic item) async {
+    await Navigator.of(context).pushNamed("Note", arguments: {"item": item});
   }
 
   @override

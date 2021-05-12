@@ -101,12 +101,13 @@ class CategoryGridView extends StatelessWidget {
 class NoteForm extends StatefulWidget {
   final dynamic categories;
   final int type;
+  final dynamic item;
 
-  NoteForm(this.categories, this.type);
+  NoteForm(this.categories, this.type, this.item);
 
   @override
   State<StatefulWidget> createState() {
-    return _NoteFormState(categories, type);
+    return _NoteFormState(categories, type, item);
   }
 }
 
@@ -119,6 +120,7 @@ class _NoteFormState extends State<NoteForm> {
   dynamic categories;
   dynamic displayCategories;
   int type;
+  dynamic item;
   //表单数据
   double _cash;
   DateTime _date;
@@ -126,15 +128,24 @@ class _NoteFormState extends State<NoteForm> {
   dynamic _selectedCategory2;
   String _comment;
 
-  _NoteFormState(this.categories, this.type) {
+  _NoteFormState(this.categories, this.type, this.item) {
     displayCategories = [...categories.where((r) => r["type"] == type)];
-    _selectedCategory1 =
-        displayCategories.length > 0 ? displayCategories[0] : null;
 
-    _cash = 0;
-    var now = DateTime.now().toLocal();
-    _date = DateTime(now.year, now.month, now.day);
-    _comment = "";
+    if (item == null) {
+      _selectedCategory1 =
+          displayCategories.length > 0 ? displayCategories[0] : null;
+
+      _cash = 0;
+      var now = DateTime.now().toLocal();
+      _date = DateTime(now.year, now.month, now.day);
+      _comment = "";
+    } else {
+      _selectedCategory1 =
+          displayCategories.firstWhere((r) => r["id"] == item["category1Id"]);
+      _cash = item["cash"];
+      _date = DateTime.parse(item["date"]);
+      _comment = item["comment"];
+    }
     _renderForm();
   }
 
@@ -161,13 +172,24 @@ class _NoteFormState extends State<NoteForm> {
   void _handleNote(int type) async {
     _updateData();
     try {
-      await api("/item/", method: "POST", data: {
-        "date": _date.toIso8601String(),
-        "cash": _cash,
-        "type": type,
-        "category1Id": _selectedCategory1["id"],
-        "comment": _comment
-      });
+      if (item == null) {
+        await api("/item/", method: "POST", data: {
+          "date": _date.toIso8601String(),
+          "cash": _cash,
+          "type": type,
+          "category1Id": _selectedCategory1["id"],
+          "comment": _comment
+        });
+      } else {
+        await api("/item/" + item["id"].toString(), method: "PUT", data: {
+          "id": item["id"],
+          "date": _date.toIso8601String(),
+          "cash": _cash,
+          "type": type,
+          "category1Id": _selectedCategory1["id"],
+          "comment": _comment
+        });
+      }
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("保存成功")));
       Navigator.of(context).pop();
@@ -260,8 +282,9 @@ class MainMoneyBox extends StatelessWidget {
 class ItemListView extends StatelessWidget {
   final dynamic items;
   final dynamic onLoadMore;
+  final dynamic onItemTap;
 
-  ItemListView({this.items, this.onLoadMore});
+  ItemListView({this.items, this.onLoadMore, this.onItemTap});
 
   Widget _getTileTitle(dynamic item) {
     var title = item["category1"]["name"];
@@ -313,6 +336,7 @@ class ItemListView extends StatelessWidget {
         title: _getTileTitle(r),
         subtitle: r["comment"] != "" ? Text(r["comment"]) : null,
         trailing: _getTrailing(r),
+        onTap: () async => onItemTap != null ? await onItemTap(r) : null,
       ));
     }
     widgets.add(ListTile(
