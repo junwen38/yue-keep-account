@@ -98,19 +98,19 @@ class CategoryGridView extends StatelessWidget {
   }
 }
 
-class PayoutForm extends StatefulWidget {
+class NoteForm extends StatefulWidget {
   final dynamic categories;
   final int type;
 
-  PayoutForm(this.categories, this.type);
+  NoteForm(this.categories, this.type);
 
   @override
   State<StatefulWidget> createState() {
-    return _PayoutFormState(categories, type);
+    return _NoteFormState(categories, type);
   }
 }
 
-class _PayoutFormState extends State<PayoutForm> {
+class _NoteFormState extends State<NoteForm> {
   Map<String, TextEditingController> _controllers = {
     "cash": TextEditingController(),
     "date": TextEditingController(),
@@ -126,7 +126,7 @@ class _PayoutFormState extends State<PayoutForm> {
   dynamic _selectedCategory2;
   String _comment;
 
-  _PayoutFormState(this.categories, this.type) {
+  _NoteFormState(this.categories, this.type) {
     displayCategories = [...categories.where((r) => r["type"] == type)];
     _selectedCategory1 =
         displayCategories.length > 0 ? displayCategories[0] : null;

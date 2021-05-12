@@ -283,8 +283,8 @@ class _NotePageState extends State<NotePage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var categories = snapshot.data;
-                  var payoutForm = PayoutForm(categories, 0);
-                  var incomeForm = PayoutForm(categories, 1);
+                  var payoutForm = NoteForm(categories, 0);
+                  var incomeForm = NoteForm(categories, 1);
                   return TabBarView(children: [payoutForm, incomeForm]);
                 } else if (snapshot.hasError) {
                   //Error
