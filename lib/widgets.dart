@@ -253,7 +253,7 @@ class _NoteFormState extends State<NoteForm> {
           Container(
               margin: fieldMargin,
               child: TextButton(
-                  child: Text("记一笔"), onPressed: () => _handleNote(type)))
+                  child: Text("保存"), onPressed: () => _handleNote(type)))
         ],
       ),
     );
