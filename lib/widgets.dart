@@ -132,13 +132,7 @@ class _NoteFormState extends State<NoteForm> {
     displayCategories = [...categories.where((r) => r["type"] == type)];
 
     if (item == null) {
-      _selectedCategory1 =
-          displayCategories.length > 0 ? displayCategories[0] : null;
-
-      _cash = 0;
-      var now = DateTime.now().toLocal();
-      _date = DateTime(now.year, now.month, now.day);
-      _comment = "";
+      _initialData();
     } else {
       _selectedCategory1 =
           displayCategories.firstWhere((r) => r["id"] == item["category1Id"]);
@@ -147,6 +141,16 @@ class _NoteFormState extends State<NoteForm> {
       _comment = item["comment"];
     }
     _renderForm();
+  }
+
+  void _initialData() {
+    _selectedCategory1 =
+        displayCategories.length > 0 ? displayCategories[0] : null;
+
+    _cash = 0;
+    var now = DateTime.now().toLocal();
+    _date = DateTime(now.year, now.month, now.day);
+    _comment = "";
   }
 
   //从表单数据更新Widget
@@ -169,7 +173,7 @@ class _NoteFormState extends State<NoteForm> {
     });
   }
 
-  void _handleNote(int type) async {
+  void _handleNote(int type, {bool isNoteMore = false}) async {
     _updateData();
     try {
       Response<dynamic> res;
@@ -193,7 +197,12 @@ class _NoteFormState extends State<NoteForm> {
       }
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("保存成功")));
-      Navigator.of(context).pop(res.data);
+      if (isNoteMore) {
+        _initialData();
+        _renderForm();
+      } else {
+        Navigator.of(context).pop(res.data);
+      }
     } on DioError catch (e) {
       handleError(context, e);
     }
@@ -252,8 +261,18 @@ class _NoteFormState extends State<NoteForm> {
           ),
           Container(
               margin: fieldMargin,
-              child: TextButton(
-                  child: Text("保存"), onPressed: () => _handleNote(type)))
+              child: Row(children: [
+                Expanded(
+                    child: TextButton(
+                        child: Text("保存"), onPressed: () => _handleNote(type))),
+                Expanded(
+                    child: TextButton(
+                  child: Text("再记一笔"),
+                  onPressed: item == null
+                      ? () => _handleNote(type, isNoteMore: true)
+                      : null,
+                ))
+              ]))
         ],
       ),
     );
