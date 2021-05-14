@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: '个人账簿',
+        title: '小月记账',
         theme: ThemeData(
           // This is the theme of your application.
           //
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
-        home: MyHomePage(title: '个人账簿'),
+        home: MyHomePage(title: '小月记账'),
         routes: {
           "CategorySetting": (context) {
             return CategorySettingPage(
