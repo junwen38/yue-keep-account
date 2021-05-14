@@ -61,8 +61,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedTabIndex = 0;
-  String _title = _TITLES[0];
-  static const _TITLES = <String>["首页", "账单", "报表", "设置"];
+  String _title = "小月记账";
 
   Widget getBody(int index) {
     switch (index) {
@@ -88,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(_title),
+        elevation: 0,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
@@ -103,7 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
           setState(() {
-            _title = _TITLES[index];
             _selectedTabIndex = index;
           });
         },
