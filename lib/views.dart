@@ -1,4 +1,5 @@
 import 'package:accountbook_mobile/widgets.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -145,6 +146,17 @@ class _HomeViewState extends State<HomeView> {
 
   void _handleItemTap(dynamic item) async {
     await Navigator.of(context).pushNamed("Note", arguments: {"item": item});
+    var index =
+        _lastestItems.indexWhere((element) => element["id"] == item["id"]);
+    try {
+      var res = await api("/item/" + item["id"].toString());
+      setState(() {
+        _lastestItems.removeAt(index);
+        _lastestItems.insert(index, res.data);
+      });
+    } on DioError catch (e) {
+      handleError(context, e, operation: "刷新");
+    }
   }
 
   @override

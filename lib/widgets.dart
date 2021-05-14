@@ -172,8 +172,9 @@ class _NoteFormState extends State<NoteForm> {
   void _handleNote(int type) async {
     _updateData();
     try {
+      Response<dynamic> res;
       if (item == null) {
-        await api("/item/", method: "POST", data: {
+        res = await api("/item/", method: "POST", data: {
           "date": _date.toIso8601String(),
           "cash": _cash,
           "type": type,
@@ -181,7 +182,7 @@ class _NoteFormState extends State<NoteForm> {
           "comment": _comment
         });
       } else {
-        await api("/item/" + item["id"].toString(), method: "PUT", data: {
+        res = await api("/item/" + item["id"].toString(), method: "PUT", data: {
           "id": item["id"],
           "date": _date.toIso8601String(),
           "cash": _cash,
@@ -192,7 +193,7 @@ class _NoteFormState extends State<NoteForm> {
       }
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("保存成功")));
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(res.data);
     } on DioError catch (e) {
       handleError(context, e);
     }
