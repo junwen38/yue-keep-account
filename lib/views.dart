@@ -145,17 +145,24 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void _handleItemTap(dynamic item) async {
-    await Navigator.of(context).pushNamed("Note", arguments: {"item": item});
-    var index =
-        _lastestItems.indexWhere((element) => element["id"] == item["id"]);
-    try {
-      var res = await api("/item/" + item["id"].toString());
+    dynamic result = await Navigator.of(context)
+        .pushNamed("Note", arguments: {"item": item});
+    var index = _lastestItems
+        .indexWhere((element) => element["id"] == result["item"]["id"]);
+    if (result["operation"] == "save") {
+      try {
+        var res = await api("/item/" + item["id"].toString());
+        setState(() {
+          _lastestItems.removeAt(index);
+          _lastestItems.insert(index, res.data);
+        });
+      } on DioError catch (e) {
+        handleError(context, e, operation: "刷新");
+      }
+    } else if (result["operation"] == "delete") {
       setState(() {
         _lastestItems.removeAt(index);
-        _lastestItems.insert(index, res.data);
       });
-    } on DioError catch (e) {
-      handleError(context, e, operation: "刷新");
     }
   }
 

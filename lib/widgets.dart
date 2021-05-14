@@ -201,12 +201,38 @@ class _NoteFormState extends State<NoteForm> {
         _initialData();
         _renderForm();
       } else {
-        Navigator.of(context).pop(res.data);
+        Navigator.of(context).pop({"operation": "save", "item": res.data});
       }
     } on DioError catch (e) {
       handleError(context, e);
     }
   }
+
+  void _handleDelete() async {
+    try {
+      await api("/item/" + item["id"].toString(), method: "DELETE");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("删除成功")));
+      Navigator.of(context).pop({"operation": "delete", "item": item});
+    } on DioError catch (e) {
+      handleError(context, e);
+    }
+  }
+
+  Widget _buildNoteButton() =>
+      TextButton(child: Text("保存"), onPressed: () => _handleNote(type));
+
+  Widget _buildNoteMoreButton() => TextButton(
+        child: Text("再记一笔"),
+        onPressed: () => _handleNote(type, isNoteMore: true),
+      );
+
+  Widget _buildDeleteButton() => TextButton(
+        child: Text("删除"),
+        style:
+            ButtonStyle(foregroundColor: MaterialStateProperty.all(Colors.red)),
+        onPressed: () => _handleDelete(),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -262,16 +288,11 @@ class _NoteFormState extends State<NoteForm> {
           Container(
               margin: fieldMargin,
               child: Row(children: [
+                Expanded(child: _buildNoteButton()),
                 Expanded(
-                    child: TextButton(
-                        child: Text("保存"), onPressed: () => _handleNote(type))),
-                Expanded(
-                    child: TextButton(
-                  child: Text("再记一笔"),
-                  onPressed: item == null
-                      ? () => _handleNote(type, isNoteMore: true)
-                      : null,
-                ))
+                    child: item == null
+                        ? _buildNoteMoreButton()
+                        : _buildDeleteButton())
               ]))
         ],
       ),
