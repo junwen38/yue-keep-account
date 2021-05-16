@@ -43,7 +43,7 @@ class CategoryGridView extends StatelessWidget {
       ),
     );
     return GridView.extent(
-      maxCrossAxisExtent: 80,
+      maxCrossAxisExtent: 100,
       children: [
         ...categories.map(
           (e) => TextButton(
@@ -74,6 +74,18 @@ class CategoryGridView extends StatelessWidget {
                                   ? getColor()
                                   : Colors.white),
                         ),
+                        ...(e["category2_name"] != null
+                            ? [
+                                Text(
+                                  e["category2_name"],
+                                  style: TextStyle(
+                                      color: e["id"] != selectedItem
+                                          ? getColor()
+                                          : Colors.white),
+                                  textScaleFactor: 0.8,
+                                )
+                              ]
+                            : [])
                       ]),
                   ...(e["haveChildren"] ? [moreWidget] : [])
                 ],
