@@ -32,8 +32,7 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
   }
 
   Future<dynamic> _refresh() async {
-    var query = _parent == null ? "" : "?parentId=${_parent['id']}";
-    var res = await api("/category/$query");
+    var res = await api("/category");
     return res.data;
   }
 
@@ -119,6 +118,7 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
               future: _ajaxFuture,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
+                  var parentId = _parent != null ? _parent["id"] : null;
                   return TabBarView(
                     children: [
                       ...tabs.map((item) {
@@ -127,7 +127,8 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                             return CategoryGridView(
                               type: 0,
                               categories: [
-                                ...snapshot.data.where((i) => i["type"] == 0)
+                                ...snapshot.data.where((i) =>
+                                    i["type"] == 0 && i["parentId"] == parentId)
                               ],
                               onPress: (item) =>
                                   _showSubCategory(context, item),

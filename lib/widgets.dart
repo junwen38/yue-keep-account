@@ -141,13 +141,17 @@ class _NoteFormState extends State<NoteForm> {
   String _comment;
 
   _NoteFormState(this.categories, this.type, this.item) {
-    displayCategories = [...categories.where((r) => r["type"] == type)];
+    displayCategories = [
+      ...categories.where((r) => r["type"] == type && r["parentId"] == null)
+    ];
 
     if (item == null) {
       _initialData();
     } else {
       _selectedCategory1 =
-          displayCategories.firstWhere((r) => r["id"] == item["category1Id"]);
+          categories.firstWhere((r) => r["id"] == item["category1Id"]);
+      _selectedCategory2 =
+          categories.firstWhere((r) => r["id"] == item["category2Id"]);
       _cash = item["cash"];
       _date = DateTime.parse(item["date"]);
       _comment = item["comment"];
@@ -182,6 +186,7 @@ class _NoteFormState extends State<NoteForm> {
   void _handleCategoryPress(e) {
     setState(() {
       _selectedCategory1 = e;
+      _selectedCategory2 = null;
     });
   }
 
@@ -264,7 +269,16 @@ class _NoteFormState extends State<NoteForm> {
             height: 78.5 * 2,
             margin: fieldMargin,
             child: CategoryGridView(
-              categories: [...displayCategories],
+              categories: [
+                ...displayCategories.map((i) {
+                  if (i["id"] == _selectedCategory1["id"] &&
+                      _selectedCategory2 != null) {
+                    return {...i, "category2_name": _selectedCategory2["name"]};
+                  } else {
+                    return i;
+                  }
+                })
+              ],
               type: type,
               selectedItem:
                   _selectedCategory1 != null ? _selectedCategory1["id"] : null,
