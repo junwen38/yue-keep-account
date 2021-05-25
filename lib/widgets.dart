@@ -150,8 +150,9 @@ class _NoteFormState extends State<NoteForm> {
     } else {
       _selectedCategory1 =
           categories.firstWhere((r) => r["id"] == item["category1Id"]);
-      _selectedCategory2 =
-          categories.firstWhere((r) => r["id"] == item["category2Id"]);
+      _selectedCategory2 = categories.firstWhere(
+          (r) => r["id"] == item["category2Id"],
+          orElse: () => null);
       _cash = item["cash"];
       _date = DateTime.parse(item["date"]);
       _comment = item["comment"];
