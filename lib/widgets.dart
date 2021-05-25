@@ -129,6 +129,7 @@ class _NoteFormState extends State<NoteForm> {
     "date": TextEditingController(),
     "comment": TextEditingController()
   };
+  PersistentBottomSheetController _subCategoryBottomSheetController;
   dynamic categories;
   dynamic displayCategories;
   int type;
@@ -184,10 +185,44 @@ class _NoteFormState extends State<NoteForm> {
     _comment = _controllers["comment"].text;
   }
 
-  void _handleCategoryPress(e) {
+  void _setCategory(dynamic category1, dynamic category2) {
     setState(() {
-      _selectedCategory1 = e;
-      _selectedCategory2 = null;
+      _selectedCategory1 = category1;
+      _selectedCategory2 = category2;
+    });
+  }
+
+  void _handleCategoryPress(e) {
+    if (e["haveChildren"]) {
+      _showSubCategory(e);
+    } else {
+      _setCategory(e, null);
+    }
+  }
+
+  void _handleSubCategoryPress(category1, category2) {
+    _setCategory(category1, category2);
+    _subCategoryBottomSheetController.close();
+  }
+
+  void _showSubCategory(parent) {
+    var subCategories = [
+      ...categories.where((item) => item["parentId"] == parent["id"])
+    ];
+    var subCategoryWidgets = subCategories.map((item) => ListTile(
+          title: Text(item["name"]),
+          onTap: () => _handleSubCategoryPress(parent, item),
+        ));
+    var parentCategoryWidget = ListTile(
+      title: Text(parent["name"]),
+      onTap: () => _handleSubCategoryPress(parent, item),
+    );
+    _subCategoryBottomSheetController =
+        Scaffold.of(context).showBottomSheet((context) {
+      return Container(
+          child: ListView(
+        children: <Widget>[parentCategoryWidget, ...subCategoryWidgets],
+      ));
     });
   }
 
@@ -201,6 +236,8 @@ class _NoteFormState extends State<NoteForm> {
           "cash": _cash,
           "type": type,
           "category1Id": _selectedCategory1["id"],
+          "category2Id":
+              _selectedCategory2 != null ? _selectedCategory2["id"] : null,
           "comment": _comment
         });
       } else {
@@ -210,6 +247,8 @@ class _NoteFormState extends State<NoteForm> {
           "cash": _cash,
           "type": type,
           "category1Id": _selectedCategory1["id"],
+          "category2Id":
+              _selectedCategory2 != null ? _selectedCategory2["id"] : null,
           "comment": _comment
         });
       }
