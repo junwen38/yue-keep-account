@@ -140,7 +140,8 @@ class _CategorySettingPageState extends State<CategorySettingPage> {
                             return CategoryGridView(
                               type: 1,
                               categories: [
-                                ...snapshot.data.where((i) => i["type"] == 1)
+                                ...snapshot.data.where((i) =>
+                                    i["type"] == 1 && i["parentId"] == parentId)
                               ],
                               onPress: (item) =>
                                   _showSubCategory(context, item),
